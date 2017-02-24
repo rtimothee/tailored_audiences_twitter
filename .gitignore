@@ -2,3 +2,5 @@ files/*
 config.php
 ftpsync.settings
 vendor/*
+infos.php
+.DS_Store
