@@ -6,6 +6,8 @@ error_reporting(E_ALL);
 require_once "vendor/autoload.php";
 use Hborras\TwitterAdsSDK\TwitterAds;
 use Hborras\TwitterAdsSDK\TwitterAds\TailoredAudience\TailoredAudience;
+use Hborras\TwitterAdsSDK\TwitterAds\TailoredAudience\TailoredAudienceChanges;
+use Hborras\TwitterAdsSDK\TONUpload;
 
 
 include "config.php";
@@ -28,19 +30,34 @@ function debug($obj){
 
 
 
-// Create twitter ads client
+// Connexion with Account
 $twitterAds = new TwitterAds(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_TOKEN_SECRET);
-
-// Retrieve account information
 $account = $twitterAds->getAccounts(ACCOUNT_ID);
 
-
+// Get Tailored Audiences List
+$selected_TA = null;
 $TA = new TailoredAudience();
 $list_TA = $TA->loadResource($account)->getCollection();
 
 foreach($list_TA as $tailored) {
-    debug($tailored->getName());
+    if($tailored->getName() == "test Tailored Audiences"){
+    	$selected_TA = $tailored;
+    	break;
+    }
 }
+
+if($selected_TA != null){
+	//upload
+	$upload = new TONUpload($account->getTwitterAds(), 'files/test.csv');
+    $location = $upload->perform();
+
+    // Update
+    if($location != ''){
+   		$TA_changes = new TailoredAudienceChanges($account);
+		$TA_changes->updateAudience($selected_TA->getId(), $location, 'EMAIL', 'ADD');
+    }
+}
+
 
 
 
